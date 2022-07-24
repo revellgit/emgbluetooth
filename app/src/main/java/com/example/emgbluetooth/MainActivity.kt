@@ -8,14 +8,24 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.ParcelUuid
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.ListView
 import androidx.core.app.ActivityCompat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val scanbtn = findViewById<Button>(R.id.scanbtn)
+
+        scanbtn.setOnClickListener {
+            val intent = Intent(this, ScanBluetooth::class.java)
+            startActivity(intent)
+        }
 
         // TUTORIALS :
         // https://developer.android.com/guide/topics/connectivity/bluetooth/setup
@@ -65,7 +75,10 @@ class MainActivity : AppCompatActivity() {
             val deviceName = device.name
             val deviceHardwareAddress = device.address // MAC address
             val deviceUUID = device.uuids
-            devices += deviceName
+
+            devices += deviceName + " " + deviceHardwareAddress.toString()
+
+            // devices += deviceHardwareAddress.toString()
         }
 
         val arrayAdapter: ArrayAdapter<*>
@@ -74,13 +87,11 @@ class MainActivity : AppCompatActivity() {
             "Kane Williamson", "Ross Taylor"
         )
 
-        // access the listView from xml file
+        // Access the listView from the xml file
         var mListView = findViewById<ListView>(R.id.devicelist)
         arrayAdapter = ArrayAdapter(this,
             android.R.layout.simple_list_item_1, devices)
         mListView.adapter = arrayAdapter
-
-
 
     }
 }
