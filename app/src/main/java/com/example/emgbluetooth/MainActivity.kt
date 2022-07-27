@@ -1,23 +1,30 @@
 package com.example.emgbluetooth
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.ParcelUuid
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+    @SuppressLint("NewApi")
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
         setContentView(R.layout.activity_main)
 
         val scanbtn = findViewById<Button>(R.id.scanbtn)
@@ -43,15 +50,19 @@ class MainActivity : AppCompatActivity() {
 
         // Enable Bluetooth on the device
         // Ask the user for permission if not enabled
-        val REQUEST_ENABLE_BT = 111
 
-        if (bluetoothAdapter?.isEnabled == false) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
+        val togglebtn = findViewById<Button>(R.id.togglebtn)
+
+        togglebtn.setOnClickListener {
+            val REQUEST_ENABLE_BT = 111
+
+            if (bluetoothAdapter?.isEnabled == false) {
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                if (ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) /*{
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
@@ -60,9 +71,14 @@ class MainActivity : AppCompatActivity() {
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
                 return
+            }*/
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+            } else {
+                bluetoothAdapter?.disable()
+                Toast.makeText(applicationContext,"Bluetooth Disabled",Toast.LENGTH_SHORT).show()
             }
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
         }
+
 
         // Find and Connect devices
         // https://developer.android.com/guide/topics/connectivity/bluetooth/find-bluetooth-devices

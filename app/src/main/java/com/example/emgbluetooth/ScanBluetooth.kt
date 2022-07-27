@@ -30,6 +30,7 @@ class ScanBluetooth : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
         setContentView(R.layout.activity_scan_bluetooth)
 
                 // To skip filters based on names and supported feature flags (UUIDs),
@@ -42,6 +43,7 @@ class ScanBluetooth : AppCompatActivity() {
                     .build() */
 
                 val deviceFilter: BluetoothDeviceFilter = BluetoothDeviceFilter.Builder()
+                    .setNamePattern(Pattern.compile("MR EMG"))
                     .build()
 
                 // The argument provided in setSingleDevice() determines whether a single
@@ -78,6 +80,7 @@ class ScanBluetooth : AppCompatActivity() {
                             deviceToPair?.let { device ->
                                 device.createBond()
                                 // Maintain continuous interaction with a paired device.
+                                finish()
                             }
                         }
                     }

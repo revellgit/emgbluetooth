@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">EMGBluetooth</string>
     <string name="scandevices">SCAN DEVICES</string>
+    <string name="togglebt">TOGGLE BT</string>
 </resources>
