@@ -76,9 +76,11 @@ class MainActivity : AppCompatActivity() {
 
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
         var list: ArrayList<BluetoothDevice> = ArrayList()
+        var displayList: ArrayList<String> = ArrayList()
 
         pairedDevices?.forEach { device ->
             list.add(device)
+            displayList.add("${device.name} ${device.address}")
             Log.i("device", "" + device)
         }
 
@@ -88,13 +90,13 @@ class MainActivity : AppCompatActivity() {
 
         var mListView = findViewById<ListView>(R.id.devicelist)
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, displayList)
         mListView.adapter = adapter
 
         mListView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             val device: BluetoothDevice = list[position]
-            val address: String = device.address
             val name: String = device.name
+            val address: String = device.address
             val uuid = device.uuids
 
             val intent = Intent(this, ControlActivity::class.java)
