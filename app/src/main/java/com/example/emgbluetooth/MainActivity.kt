@@ -11,21 +11,24 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.ParcelUuid
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ListView
-import android.widget.Toast
+import android.util.Log
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
     @SuppressLint("NewApi")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         supportActionBar?.hide()
+
         setContentView(R.layout.activity_main)
+
+        // Button click listener to start scan for devices activity
 
         val scanbtn = findViewById<Button>(R.id.scanbtn)
 
@@ -34,22 +37,18 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // TUTORIALS :
-        // https://developer.android.com/guide/topics/connectivity/bluetooth/setup
-        // Android Bluetooth Connectivity Tutorial - Playlist
-        // https://www.youtube.com/playlist?list=PLFh8wpMiEi8_I3ujcYY3-OaaYyLudI_qi
-
         // Create an instance of the bluetooth adapter
+
         val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
-        val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.getAdapter()
+        val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
 
         // Check if bluetooth is available on the device
+
         if (bluetoothAdapter == null) {
-            // Device doesn't support Bluetooth
+            Toast.makeText(applicationContext,"Bluetooth not supported",Toast.LENGTH_SHORT).show()
         }
 
-        // Enable Bluetooth on the device
-        // Ask the user for permission if not enabled
+        // Enable/Disable Bluetooth on the device with button press
 
         val togglebtn = findViewById<Button>(R.id.togglebtn)
 
@@ -62,16 +61,7 @@ class MainActivity : AppCompatActivity() {
                         this,
                         Manifest.permission.BLUETOOTH_CONNECT
                     ) != PackageManager.PERMISSION_GRANTED
-                ) /*{
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return
-            }*/
+                )
                     startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
             } else {
                 bluetoothAdapter?.disable()
@@ -79,35 +69,39 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Show paired devices & Allow one to be chosen from the list
 
-        // Find and Connect devices
-        // https://developer.android.com/guide/topics/connectivity/bluetooth/find-bluetooth-devices
+        // Kotlin 101: How to communicate to a Bluetooth device Part 1
+        // https://www.youtube.com/watch?v=Oz4CBHrxMMs
 
-        // Show paired devices
-
-        var devices: Array<String> = arrayOf()
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
+        var list: ArrayList<BluetoothDevice> = ArrayList()
+
         pairedDevices?.forEach { device ->
-            val deviceName = device.name
-            val deviceHardwareAddress = device.address // MAC address
-            val deviceUUID = device.uuids
-
-            devices += deviceName + " " + deviceHardwareAddress.toString()
-
-            // devices += deviceHardwareAddress.toString()
+            list.add(device)
+            Log.i("device", "" + device)
         }
 
-        val arrayAdapter: ArrayAdapter<*>
-        val users = arrayOf(
-            "Virat Kohli", "Rohit Sharma", "Steve Smith",
-            "Kane Williamson", "Ross Taylor"
-        )
+        // Populate the list of paired devices in the view
+        // set click listener for list items and open a new activity
+        // with device properties as extras
 
-        // Access the listView from the xml file
         var mListView = findViewById<ListView>(R.id.devicelist)
-        arrayAdapter = ArrayAdapter(this,
-            android.R.layout.simple_list_item_1, devices)
-        mListView.adapter = arrayAdapter
 
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
+        mListView.adapter = adapter
+
+        mListView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
+            val device: BluetoothDevice = list[position]
+            val address: String = device.address
+            val name: String = device.name
+            val uuid = device.uuids
+
+            val intent = Intent(this, ControlActivity::class.java)
+            intent.putExtra("EXTRA_NAME", name)
+            intent.putExtra("EXTRA_ADDRESS", address)
+            intent.putExtra("EXTRA_UUID", uuid)
+            startActivity(intent)
+        }
     }
 }
